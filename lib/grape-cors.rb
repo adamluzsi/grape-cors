@@ -1,5 +1,16 @@
+require 'grape'
 module Grape
   module CORS
+
+    module EndPointHelpers
+      def init_cors_headers!
+        Grape::CORS::Config.object.each_pair do |header_key,header_value|
+          header header_key, header_value.join(', ')
+        end
+      end
+    end
+
+    Grape::Endpoint.__send__ :include, EndPointHelpers
 
     module Config
       @headers  ||= ['Content-Type']
@@ -25,30 +36,31 @@ module Grape
     end
 
     class << self
+
       def apply
 
         ObjectSpace.each_object(Class).select { |klass| klass < Grape::API rescue false }.each do |api_class|
           api_class.class_eval do
 
             before do
-
-              # CORS headers
-              Grape::CORS::Config.object.each_pair do |header_key,header_value|
-                header header_key, header_value.join(', ')
-              end
-
+              init_cors_headers!
             end
 
-            self.routes.map { |route| route.route_path.to_s.sub(/\(\.:format\)$/,'') }.uniq.each do |path|
+            self.routes.map { |route|
+
+              #> get all non options call
+              unless route.route_method == "OPTIONS"
+                route.route_path.to_s.sub(/\(\.:format\)$/,'')
+              end
+            }.compact.uniq.each do |path|
 
               #> CORS Option calls
               options path do
-                Grape::CORS::Config.object.each_pair do |header_key,header_value|
-                  header header_key, header_value.join(', ')
-                end
+                init_cors_headers!
               end
 
             end
+
           end
         end
 
