@@ -19,17 +19,20 @@ module Grape
       @acah     ||= 'Access-Control-Allow-Headers'
       @acao     ||= 'Access-Control-Allow-Origin'
       @acam     ||= 'Access-Control-Allow-Methods'
+      @extra_headers ||= {}
       class << self
 
         attr_reader :headers,:origin,:methods,
-                    :acah,:acao,:acam
+                    :acah,:acao,:acam,:extra_headers
 
         def object
-          {
-              Config.acah => Config.headers,
-              Config.acao => Config.origin,
-              Config.acam => Config.methods
-          }
+          CONFIG.extra_headers.merge(
+              {
+                  Config.acah => Config.headers,
+                  Config.acao => Config.origin,
+                  Config.acam => Config.methods
+              }
+          )
         end;alias obj object
 
       end
