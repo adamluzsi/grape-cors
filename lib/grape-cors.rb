@@ -26,7 +26,7 @@ module Grape
                     :acah,:acao,:acam,:extra_headers
 
         def object
-          CONFIG.extra_headers.merge(
+          Config.extra_headers.merge(
               {
                   Config.acah => Config.headers,
                   Config.acao => Config.origin,
